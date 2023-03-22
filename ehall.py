@@ -313,6 +313,6 @@ class Ehall:
 if __name__ == "__main__":
     c = Ehall(
         id="2196113760", 
-        pwd="2232123545"
+        pwd="222222222"
     ).get_course_info(None)
     print(c)
