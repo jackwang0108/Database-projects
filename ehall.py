@@ -7,13 +7,16 @@ from typing import *
 from pathlib import Path
 
 # Third-Party Library
+import toml
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from Crypto.Cipher import AES
 
 # My Library
-from utils import red, type_check
+from utils import red, green, type_check
+
+CACHE_PATH: Path = Path(__file__).resolve().parent.joinpath("meta.toml")
 
 def get_timestamp() -> int:
     """
@@ -171,8 +174,9 @@ class Ehall:
             if _get_captcha():
                 if (memberID := _get_token()) is not None:
                     if (source := _enter_home(memberID)):
-                        print(source)
-                        return True
+                        if source:
+                            print(green("ehall 登录成功!"))
+                            return True
                     else:
                         red(_enter_home.__name__)
                 else:
@@ -308,11 +312,24 @@ class Ehall:
             couses = pd.read_excel(cache_path, index_col=0, header=0)
         return couses
 
+    @staticmethod
+    def build_from_new(toml_path: Path = CACHE_PATH) -> 'Ehall':
+        type_check(toml_path, Path)
+        id = input("请输入学号: ")
+        pwd = input("请输入密码: ")
+        with toml_path.open(mode="w") as f:
+            toml.dump({"id": id, "pwd": pwd}, f)
+        return Ehall(id=id, pwd=pwd)
+
+    @staticmethod
+    def build_from_cache(toml_path: Path = CACHE_PATH) -> 'Ehall':
+        type_check(toml_path, Path)
+        meta = toml.load(toml_path)
+        return Ehall(meta["id"], meta["pwd"])
+
 
 
 if __name__ == "__main__":
-    c = Ehall(
-        id="2196113760", 
-        pwd="222222222"
-    ).get_course_info(None)
+    e = Ehall.build_from_new()
+    c = Ehall.build_from_cache().get_course_info()
     print(c)
